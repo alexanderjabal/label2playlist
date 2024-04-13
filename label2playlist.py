@@ -1,60 +1,66 @@
+#!/usr/bin/python3
+
+# TODO: add option to specify "released before the year x" for filtering albums for oldschool labels
+# TODO: cleanup after adding to playlist: delete duplicates
+# TODO: info banner at the top of the help page
+
+import json
+import argparse
 import spotipy
 from spotipy.oauth2 import SpotifyClientCredentials
+from spotipy.oauth2 import SpotifyOAuth
 from pprint import pprint
-import spotipy.util as util
 
-playlist_uri = "https://open.spotify.com/user/wsd8gh9g3bwk64jl1oz3z1iul/playlist/3PB3H8NWnzR1ifZeap78dC?si=Iz48WtI6RASLxWhAA14dvA" # URI of playlist to add tracks to
-label_name = "Clergy"
 
-scope = "playlist-read-private playlist-modify-private playlist-modify-public"
-token = util.prompt_for_user_token("wsd8gh9g3bwk64jl1oz3z1iul", scope, client_id='952433cc2fe94c069626be1bf33cddea',client_secret='2519a53239ca4c339728a611c8e7059d', redirect_uri='http://localhost:8080/')
 
-sp = spotipy.Spotify(auth=token)
-uri_list = []
-list_of_100_uri_lists = []
-offset = 0
-prev_len = 0
-while True:
-	# pprint(sp.album("spotify:album:3LLA8KoCtMXJWBFQ51VckY"));exit()
-	# pprint(sp.search('label:"Audiocode records"', type="album", limit=50))
-	for album in sp.search(f'label:"{label_name}"', type="album", limit=50, offset=offset)["albums"]["items"]:
-		# pprint(sp.album_tracks(album["id"]));exit()
-		# pprint(sp.search(f'label:"{label_name}"', type="album", limit=50, offset=offset));exit()
-		label_name_on_album = sp.album(album["id"])["copyrights"][0]["text"]
-		# label_name_on_album = sp.album(album["id"])["copyrights"][0]["text"][5:] # for when there's a year in front of the label name
-		# print(label_name_on_album[label_name_on_album.find(label_name):label_name_on_album.find(label_name) + len(label_name)]);exit()
-		label_name_on_album = label_name_on_album[label_name_on_album.find(label_name):label_name_on_album.find(label_name) + len(label_name)]
-		pprint(label_name_on_album)
-		if label_name_on_album != label_name:
+def main(name):
+	# auth_manager = SpotifyClientCredentials()
+	# sp = spotipy.Spotify(auth_manager=auth_manager)
+	scope = "playlist-read-private playlist-modify playlist-modify-private playlist-modify-public user-read-private user-read-email"
+	
+	sp = spotipy.Spotify(auth_manager=SpotifyOAuth(scope=scope))
+	label_name = name
+	album_uris = []
+	offset = 0
+	
+	print(f"[+] Gathering search results for label {label_name}")
+	
+	while True:
+		results = sp.search(q=f'label:"{label_name}"', type="album", limit=50 , offset=offset)
+		for album in results["albums"]["items"]:
+			if sp.album(album["uri"])["label"] != label_name:
+				continue
+			album_uris.append(album["uri"])
+	
+		if len(results["albums"]["items"]) == 50:
+			offset += 50
+			continue
+		else:
 			break
-		# pprint(album["artists"][0]["name"] + " - " + album["name"])
-		# pprint(sp.album_tracks(album["id"]))
-		for track in sp.album_tracks(album["id"])["items"]:
-			# pprint(track["uri"])
-			uri_list.append(track["uri"])
+	print(f"[!] Found {len(album_uris)} albums for label {label_name}")
 	
-
-	# print(len(uri_list))
+	print(f"[+] Creating playlist for {label_name}")
+	playlist = sp.user_playlist_create(user="wsd8gh9g3bwk64jl1oz3z1iul", name=label_name, public=False)
 	
-	# print("prev len:",prev_len)
-	if prev_len == len(uri_list):
-		break
-	offset += 50
-	prev_len = len(uri_list)
-
-pprint(len(uri_list))
+	print(f"[+] Adding tracks to playlist")
 	
-for i in range(0, len(uri_list), 100):
-    x = i
-    # pprint(uri_list[x:x+100])
-    list_of_100_uri_lists.append(uri_list[x:x+100])
+	track_uris_total = []
 
-# pprint(list_of_100_uri_lists)
+	for uri in album_uris:
+		track_uris = []
+		for track in sp.album_tracks(album_id=uri)["items"]:
+			track_uris.append(track["uri"])
+		# pprint(track_uris)
+		sp.playlist_add_items(playlist_id=playlist["id"], items=track_uris)
+		track_uris_total.extend(track_uris)
+	# pprint(track_uris_total)
+	print(f"[+] Done!")
 
-#index all track uris for all the retrieved albums
-#put them all into arrays of max 100 size
-#add 100 at a time to playlist
 
+if __name__ == "__main__":
+	parser = argparse.ArgumentParser()
+	parser.add_argument( '-n', "--name", help="The name of the label", type=str, required=True, metavar="<label>")
+	# parser.add_argument( '-rb', "--released-before", help="Only adds tracks from releases from before a certain year", type=int, required=False, metavar="<year>")
+	args = parser.parse_args()
 
-for lst in list_of_100_uri_lists:
-	sp.playlist_add_items(playlist_uri, lst, position=None)
+	main(args.name)

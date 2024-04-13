@@ -3,7 +3,7 @@
 
 A script that allows the user to search for any record label and have a playlist containing all its releases (that are available on Spotify) be automatically generated and added to the user's library.
 
-This project was born out of a combination of two of my biggest hobbies: DJ'ing and programming. Digging for tracks by label is an amazing way to discover new (and old!) music. But it proved quite tiresome to search for many label releases on YouTube or Discogs separately and listen to the tracks that way. If only there was a way to just type in a label's name and get (almost) all of its releases presented to you in a single, easy to sort through list. 
+This project was born out of a combination of two of my biggest hobbies: DJ'ing techno music and programming. Digging for tracks by label is an amazing way to discover new (and old!) music. But it proved quite tiresome to search for many label releases on YouTube or Discogs separately and listen to the tracks that way. If only there was a way to just type in a label's name and get (almost) all of its releases presented to you in a single, easy to sort through list. 
 
 Well, now there is, kinda.
 

@@ -17,3 +17,6 @@ I'll work on this tool on and off in the future, I have some features that I wan
 
 If you run the script for the first time, you'll first be prompted to authenticate using your Spotify account. This authentication is completely server side and no credentials are stored by the script. After this is done you can continue to use the script as normal.
 
+## Known issues
+
+When the supplied label is old and tends to have many releases, there is a large chance that there will be a few duplicates in the playlist. I will be fixing this in the future.

@@ -14,8 +14,8 @@ from pprint import pprint
 
 
 def main(name):
-	# auth_manager = SpotifyClientCredentials()
-	# sp = spotipy.Spotify(auth_manager=auth_manager)
+	auth_manager = SpotifyClientCredentials()
+	sp = spotipy.Spotify(auth_manager=auth_manager)
 	scope = "playlist-read-private playlist-modify playlist-modify-private playlist-modify-public user-read-private user-read-email"
 	
 	sp = spotipy.Spotify(auth_manager=SpotifyOAuth(scope=scope))
